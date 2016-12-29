@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "828131895075",
+    "firebase_url": "https://sleepcare-85365.firebaseio.com",
+    "project_id": "sleepcare-85365",
+    "storage_bucket": "sleepcare-85365.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:828131895075:android:8fd18a70d5cf629d",
+        "android_client_info": {
+          "package_name": "com.barry.sleepcare"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "828131895075-rf7fruspba5jvre5mp5ot783qf2cp76f.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.barry.sleepcare",
+            "certificate_hash": "FDE25A1C1F976CB30D7E2976034517386CD81DFF"
+          }
+        },
+        {
+          "client_id": "828131895075-vutklhgcasm42ga5m00t8ojacn5fs1uh.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDKPEXfcyP2nCDMwRdNZ_OCnyU4FxuevSA"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "828131895075-vutklhgcasm42ga5m00t8ojacn5fs1uh.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
