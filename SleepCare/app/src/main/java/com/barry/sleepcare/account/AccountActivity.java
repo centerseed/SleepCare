@@ -4,6 +4,8 @@ import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -18,7 +20,7 @@ public class AccountActivity extends AppCompatActivity {
     public static final String TAG = "AccountActivity";
 
     TextView mAccountName;
-    Button mSignOut;
+    TextView mMail;
     FirebaseUser mUser;
 
     FirebaseAuth.AuthStateListener mAuthListener;
@@ -28,23 +30,18 @@ public class AccountActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_account);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         mUser = FirebaseAuth.getInstance().getCurrentUser();
 
         mAccountName = (TextView) findViewById(R.id.user_name);
+        mMail = (TextView) findViewById(R.id.email);
         if (mUser.isAnonymous()) {
             mAccountName.setText("Anonymous");
         } else {
             mAccountName.setText(mUser.getDisplayName());
+            mMail.setText(mUser.getEmail());
         }
-
-        mSignOut = (Button) findViewById(R.id.sign_out);
-        mSignOut.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                FirebaseAuth.getInstance().signOut();
-            }
-        });
 
         mAuthListener = new FirebaseAuth.AuthStateListener() {
             @Override
@@ -74,5 +71,24 @@ public class AccountActivity extends AppCompatActivity {
         if (mAuthListener != null) {
             mAuth.removeAuthStateListener(mAuthListener);
         }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_account, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        if (id == R.id.action_sign_out) {
+            FirebaseAuth.getInstance().signOut();
+        } else if (id == android.R.id.home) {
+            finish();
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 }

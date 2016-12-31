@@ -5,18 +5,18 @@
         <item
             android:id="@+id/nav_home"
             android:title="Home" />
+    </group>
+
+    <group android:checkableBehavior="single">
         <item
             android:id="@+id/nav_records"
-            android:icon="@drawable/ic_menu_gallery"
             android:title="Records" />
         <item
             android:id="@+id/nav_snore_knowledge"
-            android:icon="@drawable/ic_menu_slideshow"
             android:title="Snore Knowledge" />
 
         <item
             android:id="@+id/nav_setting"
-            android:icon="@drawable/ic_menu_manage"
             android:title="Tools" />
     </group>
 
