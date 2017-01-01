@@ -20,7 +20,8 @@
         </activity>
         <activity android:name=".account.LoginActivity" />
         <activity android:name=".account.RegisterActivity" />
-        <activity android:name=".account.AccountActivity"></activity>
+        <activity android:name=".account.AccountActivity" />
+        <activity android:name=".record.RecordActivity"></activity>
     </application>
 
 </manifest>

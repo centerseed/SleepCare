@@ -10,13 +10,14 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.barry.sleepcare.NavActivity;
 import com.barry.sleepcare.R;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
 import org.w3c.dom.Text;
 
-public class AccountActivity extends AppCompatActivity {
+public class AccountActivity extends NavActivity {
     public static final String TAG = "AccountActivity";
 
     TextView mAccountName;
@@ -30,7 +31,7 @@ public class AccountActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_account);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
 
         mUser = FirebaseAuth.getInstance().getCurrentUser();
 

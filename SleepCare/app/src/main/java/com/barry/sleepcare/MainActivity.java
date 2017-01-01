@@ -6,9 +6,12 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 
 import com.barry.sleepcare.account.LoginActivity;
+import com.barry.sleepcare.record.RecordActivity;
 import com.barry.sleepcare.view.WaveLoadingView;
 import com.bumptech.glide.Glide;
 import com.firebase.ui.storage.images.FirebaseImageLoader;
@@ -39,6 +42,14 @@ public class MainActivity extends DrawerActivity {
         mWaveLoadingView.setBottomTitleSize(12f);
         mWaveLoadingView.setWaveShiftRatio(80);
 
+        Button start = (Button) findViewById(R.id.start);
+        start.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(MainActivity.this, RecordActivity.class);
+                startActivity(intent);
+            }
+        });
     }
 
     @Override
