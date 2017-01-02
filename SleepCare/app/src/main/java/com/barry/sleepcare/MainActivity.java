@@ -1,8 +1,13 @@
 package com.barry.sleepcare;
 
+import android.*;
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -22,6 +27,8 @@ import com.google.firebase.storage.StorageReference;
 public class MainActivity extends DrawerActivity {
 
     static final String TAG = "MainActivity";
+    static final int REQUEST_CODE = 11111;
+
     private StorageReference mStorageRef;
 
     ImageView mImage;
@@ -46,8 +53,15 @@ public class MainActivity extends DrawerActivity {
         start.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(MainActivity.this, RecordActivity.class);
-                startActivity(intent);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    if (checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                       startRecord();
+                    } else {
+                        ActivityCompat.requestPermissions(MainActivity.this, new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_CODE);
+                        return;
+                    }
+                }
+                startRecord();
             }
         });
     }
@@ -100,5 +114,19 @@ public class MainActivity extends DrawerActivity {
                 .using(new FirebaseImageLoader())
                 .load(spaceRef)
                 .into(mImage);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            Log.v(TAG, "Permission: " + permissions[0] + "was " + grantResults[0]);
+            startRecord();
+        }
+    }
+
+    private void startRecord() {
+        Intent intent = new Intent(MainActivity.this, RecordActivity.class);
+        startActivity(intent);
     }
 }

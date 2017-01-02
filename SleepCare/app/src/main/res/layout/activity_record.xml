@@ -11,6 +11,47 @@
     tools:context="com.barry.sleepcare.record.RecordActivity"
     android:orientation="vertical">
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Start Time"
+            android:gravity="center_horizontal"
+            android:textSize="20dp"
+            android:layout_marginTop="32dp"/>
+
+        <TextView
+            android:id="@+id/start_time"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="22 : 30 : 12s"
+            android:gravity="center_horizontal"
+            android:textSize="32dp"
+            android:layout_marginTop="8dp"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Durations"
+            android:gravity="center_horizontal"
+            android:textSize="20dp"
+            android:layout_marginTop="32dp"/>
+
+        <TextView
+            android:id="@+id/duration"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="0h :0m :0s"
+            android:gravity="center_horizontal"
+            android:textSize="32dp"
+            android:layout_marginTop="8dp"/>
+    </LinearLayout>
+
     <com.barry.sleepcare.view.SlideToUnlock
         android:id="@+id/swipe_button"
         android:layout_width="250dp"

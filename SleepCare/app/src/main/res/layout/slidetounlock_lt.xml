@@ -7,7 +7,7 @@
         android:id="@+id/slider_bg"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@drawable/rect_btn" />
+        android:background="@drawable/rect_slide" />
 
     <TextView
         android:id="@+id/slider_label"
@@ -16,7 +16,8 @@
         android:layout_centerInParent="true"
         android:layout_gravity="center"
         android:gravity="center"
-        android:text="Slide to Stop"
+        android:paddingLeft="-24dp"
+        android:text=">>> Slide to Stop"
         android:textColor="@android:color/white"
         android:textSize="18sp"
         android:textStyle="italic" />
@@ -26,7 +27,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:layout_marginTop="2dp"
+        android:layout_margin="16dp"
         android:progressDrawable="@android:color/transparent"
-        android:thumb="@android:drawable/arrow_up_float" />
+        android:thumb="@drawable/ic_lock_white_36dp" />
 </FrameLayout>

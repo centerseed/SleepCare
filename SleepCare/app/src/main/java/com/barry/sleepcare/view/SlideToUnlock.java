@@ -99,7 +99,7 @@ public class SlideToUnlock extends RelativeLayout {
         String text = attributes.getString(R.styleable.SlideToUnlockView_text);
         Drawable thumb = attributes.getDrawable(R.styleable.SlideToUnlockView_thumb);
         if (thumb == null) {
-            thumb = getResources().getDrawable(R.drawable.circle_user);
+            thumb = getResources().getDrawable(R.drawable.ic_lock_white_36dp);
         }
         // track = attributes.getDrawable(R.styleable.SlideToUnlockView_track);
         attributes.recycle();
