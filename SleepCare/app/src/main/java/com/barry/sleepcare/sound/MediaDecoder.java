@@ -14,17 +14,15 @@ package com.barry.sleepcare.sound;
       }
   */
 
+import java.io.IOException;
+import java.nio.ByteBuffer;
+
+import android.media.AudioFormat;
 import android.media.MediaCodec;
 import android.media.MediaCodec.BufferInfo;
 import android.media.MediaExtractor;
 import android.media.MediaFormat;
-import android.util.Log;
-
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-
-import static com.barry.sleepcare.account.AccountActivity.TAG;
+import android.media.MediaRecorder;
 
 public class MediaDecoder {
     private MediaExtractor extractor = new MediaExtractor();
@@ -38,20 +36,22 @@ public class MediaDecoder {
     private ByteBuffer[] outputBuffers;
     private int outputBufferIndex = -1;
 
-    public MediaDecoder(String inputFilename) {
+    public MediaDecoder(String inputFilename){
         try {
-            Log.d("MediaRecord", "Get track from: " + inputFilename);
             extractor.setDataSource(inputFilename);
         } catch (IOException e) {
             e.printStackTrace();
-            return;
         }
 
         // Select the first audio track we find.
         int numTracks = extractor.getTrackCount();
-        Log.d("MediaRecord", "Get track num: " + numTracks);
         for (int i = 0; i < numTracks; ++i) {
             MediaFormat format = extractor.getTrackFormat(i);
+            //format.setString(MediaFormat.KEY_MIME, "audio/mp4a-latm");
+            format.setInteger(MediaFormat.KEY_SAMPLE_RATE, 16000);
+            format.setInteger(MediaFormat.KEY_CHANNEL_COUNT, 1);
+            format.setInteger(MediaFormat.KEY_PCM_ENCODING, AudioFormat.ENCODING_PCM_16BIT);
+
             String mime = format.getString(MediaFormat.KEY_MIME);
             if (mime.startsWith("audio/")) {
                 extractor.selectTrack(i);
@@ -79,72 +79,53 @@ public class MediaDecoder {
     // Read the raw data from MediaCodec.
     // The caller should copy the data out of the ByteBuffer before calling this again
     // or else it may get overwritten.
-    private ByteBuffer readData(BufferInfo infoAudio) {
+    private ByteBuffer readData(BufferInfo info) {
+        if (decoder == null)
+            return null;
 
-        boolean isEOS = false;
-        long startMs = System.currentTimeMillis();
-        long lasAudioStartMs = System.currentTimeMillis();
-        while (!Thread.interrupted()) {
-
-            if (!isEOS) {
-                int inIndex = -1;
-                try {
-                    inIndex = decoder.dequeueInputBuffer(10000);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                if (inIndex >= 0) {
-                    ByteBuffer buffer = inputBuffers[inIndex];
-                    int sampleSize = extractor.readSampleData(buffer, 0);
-                    if (sampleSize < 0) {
-
-                        decoder.queueInputBuffer(inIndex, 0, 0, 0, MediaCodec.BUFFER_FLAG_END_OF_STREAM);
-                        buffer.clear();
-                        isEOS = true;
+        for (;;) {
+            // Read data from the file into the codec.
+            if (!end_of_input_file) {
+                int inputBufferIndex = decoder.dequeueInputBuffer(1000);
+                if (inputBufferIndex >= 0) {
+                    int size = extractor.readSampleData(inputBuffers[inputBufferIndex], 0);
+                    if (size < 0) {
+                        // End Of File
+                        decoder.queueInputBuffer(inputBufferIndex, 0, 0, 0, MediaCodec.BUFFER_FLAG_END_OF_STREAM);
+                        end_of_input_file = true;
                     } else {
-                        decoder.queueInputBuffer(inIndex, 0, sampleSize, extractor.getSampleTime(), 0);
-                        buffer.clear();
+                        decoder.queueInputBuffer(inputBufferIndex, 0, size, extractor.getSampleTime(), 0);
                         extractor.advance();
                     }
                 }
             }
 
-            int outIndex = -1;
-            try {
-                outIndex = decoder.dequeueOutputBuffer(infoAudio, 10000);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            // Read the output from the codec.
+            if (outputBufferIndex >= 0)
+                // Ensure that the data is placed at the start of the buffer
+                outputBuffers[outputBufferIndex].position(0);
 
-            switch (outIndex) {
-                case MediaCodec.INFO_OUTPUT_BUFFERS_CHANGED:
-                    Log.d(TAG, "INFO_OUTPUT_BUFFERS_CHANGED");
-                    outputBuffers = decoder.getOutputBuffers();
-                    break;
-                case MediaCodec.INFO_OUTPUT_FORMAT_CHANGED:
-                    Log.d(TAG, "New format " + decoder.getOutputFormat());
-                    break;
-                case MediaCodec.INFO_TRY_AGAIN_LATER:
-                    Log.d(TAG, "dequeueOutputBuffer timed out!");
-                    break;
-                default:
-                    if (outIndex >= 0) {
-                        ByteBuffer buffer = outputBuffers[outIndex];
-                        byte[] chunk = new byte[infoAudio.size];
-                        buffer.get(chunk);
+            outputBufferIndex = decoder.dequeueOutputBuffer(info, 10000);
+            if (outputBufferIndex >= 0) {
+                // Handle EOF
+                if (info.flags != 0) {
+                    decoder.stop();
+                    decoder.release();
+                    decoder = null;
+                    return null;
+                }
 
-                        return buffer;
-                    }
-                    break;
-            }
+                // Release the buffer so MediaCodec can use it again.
+                // The data should stay there until the next time we are called.
+                decoder.releaseOutputBuffer(outputBufferIndex, false);
 
-            // All decoded frames have been rendered, we can stop playing now
-            if ((infoAudio.flags & MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0) {
-                Log.d(TAG, "OutputBuffer BUFFER_FLAG_END_OF_STREAM");
-                break;
+                return outputBuffers[outputBufferIndex];
+
+            } else if (outputBufferIndex == MediaCodec.INFO_OUTPUT_BUFFERS_CHANGED) {
+                // This usually happens once at the start of the file.
+                outputBuffers = decoder.getOutputBuffers();
             }
         }
-        return null;
     }
 
     // Return the Audio sample rate, in samples/sec.
@@ -161,12 +142,11 @@ public class MediaDecoder {
         if (data == null)
             return null;
 
-        int samplesRead = info.size / 2;
+        int samplesRead = info.size/2;
         short[] returnData = new short[samplesRead];
 
         // Converting the ByteBuffer to an array doesn't actually make a copy
         // so we must do so or it will be overwritten later.
-       // data.order(ByteOrder.LITTLE_ENDIAN).asShortBuffer().get(returnData);
         System.arraycopy(data.asShortBuffer().array(), 0, returnData, 0, samplesRead);
         return returnData;
     }

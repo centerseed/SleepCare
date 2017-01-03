@@ -117,6 +117,8 @@ public class RecordIntentService extends IntentService {
             recorder.setAudioEncodingBitRate(AudioFormat.ENCODING_PCM_16BIT);
             recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
             recorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
+            recorder.setAudioSamplingRate(16000);
+            recorder.setAudioChannels(1);
             recorder.setOutputFile(filePath + File.separator + fileName);
             recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
         } catch (Exception e) {
