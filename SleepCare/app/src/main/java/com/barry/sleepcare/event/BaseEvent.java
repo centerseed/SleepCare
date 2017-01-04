@@ -1,11 +1,12 @@
 package com.barry.sleepcare.event;
 
 import android.util.Log;
-import android.util.TimeUtils;
 
 import com.barry.sleepcare.utils.TimeStrUtils;
 
-abstract public class BaseEvent {
+import java.io.Serializable;
+
+abstract public class BaseEvent implements Serializable {
 
     static final String TAG = "Event";
 
@@ -35,6 +36,15 @@ abstract public class BaseEvent {
 
     public void setEndTime(long endTime) {
         this.mEndTime = endTime;
+        this.mDurations = (int) (mEndTime - mStartTime);
         Log.d(TAG, "Event Stop at " + TimeStrUtils.getDateTimeStr(mStartTime));
+    }
+
+    public long getStartTime() {
+        return mStartTime;
+    }
+
+    public long getEndTime() {
+        return mEndTime;
     }
 }

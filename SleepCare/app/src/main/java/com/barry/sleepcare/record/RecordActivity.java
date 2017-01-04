@@ -6,11 +6,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.barry.sleepcare.Const;
 import com.barry.sleepcare.NavActivity;
 import com.barry.sleepcare.R;
+import com.barry.sleepcare.event.SleepEvent;
 import com.barry.sleepcare.utils.TimeStrUtils;
 import com.barry.sleepcare.view.SlideToUnlock;
 
@@ -23,10 +26,13 @@ public class RecordActivity extends NavActivity {
     SlideToUnlock mSwipeBtn;
     TextView mStartTime;
     TextView mDuration;
+    TextView mStatus;
 
     Timer mTimer;
     Long mTimeStamp;
 
+    RecordReceiver mReceiver;
+    ProgressDialog mProgressDialog;
     int mDurationSec = 0;
 
     @Override
@@ -41,22 +47,15 @@ public class RecordActivity extends NavActivity {
             public void onUnlock() {
                 mTimer.cancel();
                 RecordIntentService.stopRecordService(getApplicationContext());
-                final ProgressDialog dialog = new ProgressDialog(RecordActivity.this);
-                mStartTime.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        dialog.dismiss();
-                        Intent intent = new Intent(RecordActivity.this, ResultActivity.class);
-                        startActivity(intent);
-                        RecordActivity.this.finish();
-                    }
-                }, 3000);
-                dialog.show();
+                mProgressDialog = new ProgressDialog(RecordActivity.this);
+                mProgressDialog.setTitle("Processing...");
+                mProgressDialog.show();
             }
         });
 
         mStartTime = (TextView) findViewById(R.id.start_time);
         mDuration = (TextView) findViewById(R.id.duration);
+        mStatus = (TextView) findViewById(R.id.status);
 
         mTimeStamp = 0L;
         mStartTime.setText(TimeStrUtils.getDateTimeStr(System.currentTimeMillis()));
@@ -66,14 +65,25 @@ public class RecordActivity extends NavActivity {
 
         // RecordIntentService
         RecordIntentService.startRecordService(getApplicationContext());
+        mReceiver = new RecordReceiver();
     }
 
+    @Override
     protected void onResume() {
         super.onResume();
 
         IntentFilter mFilter = new IntentFilter();
-        mFilter.addAction(RecordIntentService.EVENT_ERROR);
-        mFilter.addAction(RecordIntentService.EVENT_PERMISSION_ERROR);
+        mFilter.addAction(RecordIntentService.STATUS_ERROR + "");
+        mFilter.addAction(RecordIntentService.STATUS_PERMISSION_ERROR + "");
+        mFilter.addAction(RecordIntentService.STATUS_RECORD_FINISH + "");
+        mFilter.addAction(RecordIntentService.STATUS_RECORDING + "");
+        LocalBroadcastManager.getInstance(this).registerReceiver(mReceiver, mFilter);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mReceiver);
     }
 
     private void setTimerTask() {
@@ -103,13 +113,31 @@ public class RecordActivity extends NavActivity {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent == null) return;
-
-            if (RecordIntentService.EVENT_ERROR.equals(intent.getAction())) {
+            int status = Integer.valueOf(intent.getAction());
+            if (RecordIntentService.STATUS_ERROR == status) {
                 Toast.makeText(RecordActivity.this, intent.getStringExtra("string"), Toast.LENGTH_LONG).show();
             }
 
-            if (RecordIntentService.EVENT_PERMISSION_ERROR.equals(intent.getAction())) {
+            if (RecordIntentService.STATUS_PERMISSION_ERROR == status) {
                 Toast.makeText(RecordActivity.this, "No Record Permission", Toast.LENGTH_LONG).show();
+                finish();
+            }
+
+            if (RecordIntentService.STATUS_RECORDING == status) {
+                String msg = intent.getStringExtra(Const.ARG_STRING);
+                mStatus.setText("Recording, " + msg);
+            }
+
+            if (RecordIntentService.STATUS_RECORD_FINISH == status) {
+                SleepEvent event = (SleepEvent) intent.getSerializableExtra(Const.ARG_EVENT);
+                if (event == null) return;
+
+                Intent i = new Intent(RecordActivity.this, ResultActivity.class);
+                i.putExtra(Const.ARG_EVENT, event);
+                startActivity(i);
+                RecordActivity.this.finish();
+
+                mProgressDialog.dismiss();
                 finish();
             }
         }
