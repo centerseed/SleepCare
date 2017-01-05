@@ -14,6 +14,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.barry.sleepcare.account.AccountActivity;
+import com.barry.sleepcare.sound.SoundAnalysisActivity;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
@@ -80,6 +81,8 @@ abstract public class DrawerActivity extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.nav_home) {
+            Intent intent = new Intent(this, SoundAnalysisActivity.class);
+            startActivity(intent);
         } else if (id == R.id.nav_records) {
 
         } else if (id == R.id.nav_snore_knowledge) {

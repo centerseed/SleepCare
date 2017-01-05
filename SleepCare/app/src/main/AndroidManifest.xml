@@ -2,9 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.barry.sleepcare">
 
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
     <application
         android:allowBackup="true"
@@ -26,9 +26,13 @@
         <activity android:name=".account.RegisterActivity" />
         <activity android:name=".account.AccountActivity" />
         <activity android:name=".record.RecordActivity" />
-        <activity android:name=".record.ResultActivity"></activity>
+        <activity android:name=".record.ResultActivity" />
 
-        <service android:enabled="true" android:name=".record.RecordIntentService" />
+        <service
+            android:name=".record.RecordIntentService"
+            android:enabled="true" />
+
+        <activity android:name=".sound.SoundAnalysisActivity"></activity>
     </application>
 
 </manifest>
