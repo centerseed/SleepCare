@@ -64,10 +64,8 @@ public class ResultActivity extends NavActivity {
     }
 
     private void decodeFile(String fileName) {
-        final AudioCodec audioCodec = AudioCodec.newInstance();
-        audioCodec.setEncodeType(MediaFormat.MIMETYPE_AUDIO_AAC);
+        final AudioCodec audioCodec = AudioCodec.newInstance(MediaFormat.MIMETYPE_AUDIO_AAC);
         audioCodec.setIOPath(fileName, null);
-        audioCodec.prepare();
         audioCodec.startAsync();
 
         audioCodec.setOnCompleteListener(new AudioCodec.OnCompleteListener() {

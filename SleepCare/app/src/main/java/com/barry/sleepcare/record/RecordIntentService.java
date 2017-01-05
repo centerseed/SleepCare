@@ -191,11 +191,9 @@ public class RecordIntentService extends IntentService {
             mRecorder = null;
 
             // TODO: analysis sound data
-            final AudioCodec audioCodec = AudioCodec.newInstance();
-            audioCodec.setEncodeType(MediaFormat.MIMETYPE_AUDIO_AAC);
+            final AudioCodec audioCodec = AudioCodec.newInstance(MediaFormat.MIMETYPE_AUDIO_AAC);
             // audioCodec.setIOPath(mSleepEvent.getFolderPath() + "/" + currFileName, mSleepEvent.getFolderPath() + "/1-" + currFileName);
             audioCodec.setIOPath(mSleepEvent.getFolderPath() + "/" + currFileName, null);
-            audioCodec.prepare();
             audioCodec.startAsync();
 
             audioCodec.setOnCompleteListener(new AudioCodec.OnCompleteListener() {

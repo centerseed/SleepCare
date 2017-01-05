@@ -48,8 +48,10 @@ public class AudioCodec {
     private long decodeSize;
 
 
-    public static AudioCodec newInstance() {
-        return new AudioCodec();
+    public static AudioCodec newInstance(String encodeType) {
+        AudioCodec codec = new AudioCodec();
+        codec.encodeType = encodeType;
+        return codec;
     }
 
     /**
@@ -187,6 +189,7 @@ public class AudioCodec {
      */
     public void startAsync() {
         showLog("start");
+        prepare();
 
         new Thread(new DecodeRunnable()).start();
         if (dstPath != null)

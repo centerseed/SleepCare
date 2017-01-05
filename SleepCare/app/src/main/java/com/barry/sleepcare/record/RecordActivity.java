@@ -47,9 +47,8 @@ public class RecordActivity extends NavActivity {
             public void onUnlock() {
                 mTimer.cancel();
                 RecordIntentService.stopRecordService(getApplicationContext());
-                mProgressDialog = new ProgressDialog(RecordActivity.this);
-                mProgressDialog.setTitle("Processing...");
-                mProgressDialog.show();
+                mProgressDialog = ProgressDialog.show(RecordActivity.this,
+                        "處理中", "正在結束錄音...",true);
             }
         });
 

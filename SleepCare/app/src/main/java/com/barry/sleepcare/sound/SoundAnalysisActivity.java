@@ -1,5 +1,6 @@
 package com.barry.sleepcare.sound;
 
+import android.app.ProgressDialog;
 import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
@@ -20,6 +21,7 @@ import android.widget.Toast;
 
 import com.barry.sleepcare.NavActivity;
 import com.barry.sleepcare.R;
+import com.barry.sleepcare.record.RecordActivity;
 import com.barry.sleepcare.utils.FileUtils;
 import com.barry.sleepcare.view.WaveformView;
 import com.google.firebase.auth.FirebaseAuth;
@@ -29,6 +31,7 @@ import java.io.File;
 public class SoundAnalysisActivity extends NavActivity {
 
     WaveformView mWaveForm;
+    ProgressDialog mProgressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,7 +50,6 @@ public class SoundAnalysisActivity extends NavActivity {
             startActivityForResult(
                     Intent.createChooser(intent, "Select a File to Upload"), 1);
         } catch (android.content.ActivityNotFoundException ex) {
-            // Potentially direct the user to the Market with a Dialog
             Toast.makeText(this, "Please install a File Manager.",
                     Toast.LENGTH_SHORT).show();
         }
@@ -76,12 +78,12 @@ public class SoundAnalysisActivity extends NavActivity {
         switch (requestCode) {
             case 1:
                 if (resultCode == RESULT_OK) {
-                    // Get the Uri of the selected file
                     Uri uri = data.getData();
                     String fileName = FileUtils.getPath(this, uri);
 
-                    Toast.makeText(this, "Get file:" + fileName, Toast.LENGTH_LONG).show();
-
+                    mProgressDialog = new ProgressDialog(SoundAnalysisActivity.this, R.style.Theme_MyDialog);
+                    mProgressDialog.setMessage("Analyzing...");
+                    mProgressDialog.show();
                     decodeFile(fileName);
                 }
                 break;
@@ -90,10 +92,8 @@ public class SoundAnalysisActivity extends NavActivity {
     }
 
     private void decodeFile(String fileName) {
-        final AudioCodec audioCodec = AudioCodec.newInstance();
-        audioCodec.setEncodeType(MediaFormat.MIMETYPE_AUDIO_AAC);
+        final AudioCodec audioCodec = AudioCodec.newInstance(MediaFormat.MIMETYPE_AUDIO_AAC);
         audioCodec.setIOPath(fileName, null);
-        audioCodec.prepare();
         audioCodec.startAsync();
 
         audioCodec.setOnCompleteListener(new AudioCodec.OnCompleteListener() {
@@ -102,6 +102,7 @@ public class SoundAnalysisActivity extends NavActivity {
                 audioCodec.release();
                 short[] pcm = audioCodec.getDecodedShortArray();
                 mWaveForm.updateAudioData(pcm);
+                mProgressDialog.dismiss();
             }
         });
     }
