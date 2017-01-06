@@ -23,7 +23,6 @@ abstract public class BaseEvent implements Serializable {
     }
 
     protected EventType mType;
-    protected int mEventType;
     protected long mStartTime;
     protected long mEndTime;
     protected int mDurations;

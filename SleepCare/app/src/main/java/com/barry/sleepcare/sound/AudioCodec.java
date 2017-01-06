@@ -220,7 +220,7 @@ public class AudioCodec {
             }
 
             byte[] pcmChunk = chunkPCMDataContainer.get(0);//每次取出index 0 的数据
-            chunkPCMDataContainer.remove(pcmChunk);//取出后将此数据remove掉 既能保证PCM数据块的取出顺序 又能及时释放内存
+            chunkPCMDataContainer.remove(0);//取出后将此数据remove掉 既能保证PCM数据块的取出顺序 又能及时释放内存
             return pcmChunk;
         }
     }

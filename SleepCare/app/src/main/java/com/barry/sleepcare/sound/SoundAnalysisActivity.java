@@ -21,12 +21,14 @@ import android.widget.Toast;
 
 import com.barry.sleepcare.NavActivity;
 import com.barry.sleepcare.R;
+import com.barry.sleepcare.event.SoundEvent;
 import com.barry.sleepcare.record.RecordActivity;
 import com.barry.sleepcare.utils.FileUtils;
 import com.barry.sleepcare.view.WaveformView;
 import com.google.firebase.auth.FirebaseAuth;
 
 import java.io.File;
+import java.util.ArrayList;
 
 public class SoundAnalysisActivity extends NavActivity {
 
@@ -102,10 +104,16 @@ public class SoundAnalysisActivity extends NavActivity {
                 audioCodec.release();
                 short[] pcm = audioCodec.getDecodedShortArray();
                 mWaveForm.updateAudioData(pcm);
-                mProgressDialog.dismiss();
+
+                SoundAnalyzer analyzer = SoundAnalyzer.getInstance();
+                analyzer.setOnAnalyzedListener(new SoundAnalyzer.OnAnalyzedListener() {
+                    @Override
+                    public void onAnalyzedFinish(ArrayList<SoundEvent> soundEvents) {
+                        mProgressDialog.dismiss();
+                    }
+                });
+                analyzer.asyncAnalyze(pcm);
             }
         });
     }
-
-
 }

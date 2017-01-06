@@ -20,7 +20,7 @@ public class WaveformView extends SurfaceView {
     // To make quieter sounds still show up well on the display, we use +/- 8192 as the amplitude
     // that reaches the top/bottom of the view instead of +/- 32767. Any samples that have
     // magnitude higher than this limit will simply be clipped during drawing.
-    private static final float MAX_AMPLITUDE_TO_DRAW = 8192.0f;
+    private static final float MAX_AMPLITUDE_TO_DRAW = 32767;
 
     // The queue that will hold historical audio data.
     private final LinkedList<short[]> mAudioData;
@@ -96,6 +96,23 @@ public class WaveformView extends SurfaceView {
         int brightness = colorDelta;
 
         for (short[] buffer : mAudioData) {
+            float lastX = -1;
+            float lastY = -1;
+            float scaleX = width / buffer.length;
+
+            for (int x = 0; x < buffer.length; x+=10) {
+
+                short sample = buffer[x];
+                float y = (sample / MAX_AMPLITUDE_TO_DRAW) * centerY + centerY;
+                if (lastX != -1) {
+                    canvas.drawLine(lastX, lastY, x * scaleX, y, mPaint);
+                }
+
+                lastX = x * scaleX;
+                lastY = y;
+            }
+        }
+       /* for (short[] buffer : mAudioData) {
             mPaint.setColor(Color.argb(brightness, 128, 255, 192));
 
             float lastX = -1;
@@ -118,5 +135,6 @@ public class WaveformView extends SurfaceView {
 
             brightness += colorDelta;
         }
+        */
     }
 }
