@@ -1,6 +1,5 @@
 package com.barry.sleepcare.sound;
 
-import android.media.audiofx.AudioEffect;
 import android.util.Log;
 
 import com.barry.sleepcare.event.BaseEvent;
@@ -85,17 +84,20 @@ public class SoundAnalyzer {
             Statistic statistic = getStatistic(pcm);
             Log.d(TAG, "Get max, mean value for data: " + statistic.max + " : " + statistic.mean);
 
-            short threshold = (short) ((statistic.max - statistic.mean) / 3);
+            short threshold = (short) (statistic.mean + (statistic.max - statistic.mean) / 3);
             AmplitudeDescriptor descriptor = null;
+            int WINDOW_START_OFFSET = MIN_WINDOWS_SIZE / 8;
+            int WINDOW_END_OFFSET = (int) (MIN_WINDOWS_SIZE * 0.825);
 
-            for (int i = 20; i < pcm.length; i += 10) { // skip some point for efficient
+            for (int i = WINDOW_START_OFFSET; i < pcm.length; i++) { // skip some point for efficient
                 short prev = (short) Math.abs(pcm[i]);
-                short curr = (short) Math.abs(pcm[i - 10]);
-                if ((curr - prev) > threshold) {
+                short curr = (short) Math.abs(pcm[i]);
+                if (Math.abs(curr) > threshold) {
                     descriptor = new AmplitudeDescriptor();
-                    descriptor.start = i/16;   // 16000/1000 -> 1ms contain 16 points
+                    descriptor.start = (i - WINDOW_START_OFFSET) / 16;   // 16000/1000 -> 1ms contain 16 points
+                    descriptor.end = (i + WINDOW_END_OFFSET) / 16;
                     i += MIN_WINDOWS_SIZE;
-                    descriptor.end =  i/16;
+
                     descriptors.add(descriptor);
                 }
             }
@@ -123,7 +125,7 @@ public class SoundAnalyzer {
         private ArrayList<SoundEvent> getEventFromDescripotrs(ArrayList<AmplitudeDescriptor> descriptors) {
             ArrayList<SoundEvent> events = new ArrayList<>();
             events.clear();
-            for (AmplitudeDescriptor descriptor: descriptors) {
+            for (AmplitudeDescriptor descriptor : descriptors) {
                 SoundEvent event = new SoundEvent(BaseEvent.EventType.Snore, descriptor.start);
                 event.setEndTime(descriptor.end);
                 events.add(event);

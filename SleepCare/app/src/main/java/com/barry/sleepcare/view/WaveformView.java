@@ -7,7 +7,9 @@ import android.graphics.Paint;
 import android.util.AttributeSet;
 import android.view.SurfaceView;
 
-import java.util.LinkedList;
+import com.barry.sleepcare.event.SoundEvent;
+
+import java.util.ArrayList;
 
 /**
  * A view that displays audio data on the screen as a waveform.
@@ -23,9 +25,13 @@ public class WaveformView extends SurfaceView {
     private static final float MAX_AMPLITUDE_TO_DRAW = 32767;
 
     // The queue that will hold historical audio data.
-    private final LinkedList<short[]> mAudioData;
+    private short[] mAudioData;
+
+    ArrayList<SoundEvent> mSoundEvents;
 
     private final Paint mPaint;
+
+    int mEventDrawIndex = 0;
 
     public WaveformView(Context context) {
         this(context, null, 0);
@@ -37,8 +43,6 @@ public class WaveformView extends SurfaceView {
 
     public WaveformView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
-
-        mAudioData = new LinkedList<short[]>();
 
         mPaint = new Paint();
         mPaint.setStyle(Paint.Style.STROKE);
@@ -54,19 +58,22 @@ public class WaveformView extends SurfaceView {
      *
      * @param buffer the most recent buffer of audio samples
      */
-    public synchronized void updateAudioData(short[] buffer) {
-        short[] newBuffer;
+    public synchronized void setAudioData(short[] buffer) {
+        mAudioData = buffer;
+    }
 
-        // We want to keep a small amount of history in the view to provide a nice fading effect.
-        // We use a linked list that we treat as a queue for this.
-        if (mAudioData.size() == HISTORY_SIZE) {
-            newBuffer = mAudioData.removeFirst();
-            System.arraycopy(buffer, 0, newBuffer, 0, buffer.length);
-        } else {
-            newBuffer = buffer.clone();
+    public synchronized void drawAudioData(short[] buffer) {
+        setAudioData(buffer);
+        // Update the display.
+        Canvas canvas = getHolder().lockCanvas();
+        if (canvas != null) {
+            drawWaveform(canvas);
+            getHolder().unlockCanvasAndPost(canvas);
         }
+    }
 
-        mAudioData.addLast(newBuffer);
+    public synchronized void setSoundEventsAndDraw(ArrayList<SoundEvent> events) {
+        this.mSoundEvents = events;
 
         // Update the display.
         Canvas canvas = getHolder().lockCanvas();
@@ -84,6 +91,7 @@ public class WaveformView extends SurfaceView {
     private void drawWaveform(Canvas canvas) {
         // Clear the screen each time because SurfaceView won't do this for us.
         canvas.drawColor(Color.BLACK);
+        mEventDrawIndex = 0;
 
         float width = getWidth();
         float height = getHeight();
@@ -91,27 +99,27 @@ public class WaveformView extends SurfaceView {
 
         // We draw the history from oldest to newest so that the older audio data is further back
         // and darker than the most recent data.
-       // int colorDelta = 255 / (HISTORY_SIZE + 1);
+        // int colorDelta = 255 / (HISTORY_SIZE + 1);
         int colorDelta = 255;
         int brightness = colorDelta;
 
-        for (short[] buffer : mAudioData) {
-            float lastX = -1;
-            float lastY = -1;
-            float scaleX = width / buffer.length;
+        float lastX = -1;
+        float lastY = -1;
+        float scaleX = width / mAudioData.length;
 
-            for (int x = 0; x < buffer.length; x+=10) {
+        for (int x = 0; x < mAudioData.length; x += 10) {
 
-                short sample = buffer[x];
-                float y = (sample / MAX_AMPLITUDE_TO_DRAW) * centerY + centerY;
-                if (lastX != -1) {
-                    canvas.drawLine(lastX, lastY, x * scaleX, y, mPaint);
-                }
-
-                lastX = x * scaleX;
-                lastY = y;
+            short sample = mAudioData[x];
+            mPaint.setColor(getPaintColor(x));
+            float y = (sample / MAX_AMPLITUDE_TO_DRAW) * centerY + centerY;
+            if (lastX != -1) {
+                canvas.drawLine(lastX, lastY, x * scaleX, y, mPaint);
             }
+
+            lastX = x * scaleX;
+            lastY = y;
         }
+
        /* for (short[] buffer : mAudioData) {
             mPaint.setColor(Color.argb(brightness, 128, 255, 192));
 
@@ -136,5 +144,16 @@ public class WaveformView extends SurfaceView {
             brightness += colorDelta;
         }
         */
+    }
+
+    private int getPaintColor(int x) {
+        if (mSoundEvents == null || mSoundEvents.size() == 0) return Color.WHITE;
+
+        for (SoundEvent event : mSoundEvents) {
+            if (x / 16 > event.getStartTime() && x / 16 < event.getEndTime()) {
+                return Color.RED;
+            }
+        }
+        return Color.WHITE;
     }
 }

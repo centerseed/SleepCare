@@ -73,7 +73,7 @@ public class ResultActivity extends NavActivity {
             public void completed() {
                 audioCodec.release();
                 short[] pcm = audioCodec.getDecodedShortArray();
-                mWaveForm.updateAudioData(pcm);
+                mWaveForm.drawAudioData(pcm);
             }
         });
     }

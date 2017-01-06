@@ -103,12 +103,13 @@ public class SoundAnalysisActivity extends NavActivity {
             public void completed() {
                 audioCodec.release();
                 short[] pcm = audioCodec.getDecodedShortArray();
-                mWaveForm.updateAudioData(pcm);
+                mWaveForm.setAudioData(pcm);
 
                 SoundAnalyzer analyzer = SoundAnalyzer.getInstance();
                 analyzer.setOnAnalyzedListener(new SoundAnalyzer.OnAnalyzedListener() {
                     @Override
                     public void onAnalyzedFinish(ArrayList<SoundEvent> soundEvents) {
+                        mWaveForm.setSoundEventsAndDraw(soundEvents);
                         mProgressDialog.dismiss();
                     }
                 });
